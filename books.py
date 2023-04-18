@@ -13,5 +13,5 @@ BOOKS = [
 
 
 @app.get("/books")
-def read_all_bookss():
+def read_all_books():
     return BOOKS
