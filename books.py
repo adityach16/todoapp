@@ -33,6 +33,17 @@ async def read_category_by_query(category: str):
     return books_to_return
 
 
+
+
+@app.get("/books/by_author/")
+async def read_books_by_author(author :str):
+    books_to_return=[]
+    for book in BOOKS:
+        if book.get('author').casefold()==author.casefold():
+            books_to_return.append(book)
+    return books_to_return
+
+
 @app.get("/books/{book_author}/")
 async def read_author_cat_by_query(book_author:str,category:str):
     books_to_return = []
@@ -60,6 +71,3 @@ async def delete_book(book_title: str):
         if BOOKS[i].get('title').casefold()==book_title.casefold():
             BOOKS.pop(i)
             break
-
-
-
