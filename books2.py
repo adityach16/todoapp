@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import FastAPI, Path,Query, HTTPException
 from pydantic import BaseModel,Field
-
+from starlette import status
 app = FastAPI()
 
 
@@ -54,18 +54,18 @@ BOOKS = [
 
 
 
-@app.get("/books")
+@app.get("/books",status_code=status.HTTP_200_OK)
 async def read_all_books():
     return BOOKS
 
-@app.get("/books/{book_id}")
+@app.get("/books/{book_id}",status_code=status.HTTP_200_OK)
 async def read_book(book_id:int = Path(gt=0)):
     for book in BOOKS:
         if book.id== book_id:
             return book
     raise HTTPException(status_code=404,detail="Item Not Found")
 
-@app.get("/books/")
+@app.get("/books/",status_code=status.HTTP_200_OK)
 async def read_by_rating(book_rating: int =Query(gt=0,lt=6)):
     books_to_return=[]
     for book in BOOKS:
@@ -74,7 +74,7 @@ async def read_by_rating(book_rating: int =Query(gt=0,lt=6)):
     return books_to_return
 
 
-@app.get("/books/publish/")
+@app.get("/books/publish/",status_code=status.HTTP_200_OK)
 async def read_by_publish_date(publish_date:int =Query(gt=1999,lt=2032)):
     books_to_return=[]
     for book in BOOKS:
@@ -83,7 +83,7 @@ async def read_by_publish_date(publish_date:int =Query(gt=1999,lt=2032)):
     return books_to_return
 
 
-@app.post("/create_book")
+@app.post("/create_book",status_code=status.HTTP_201_CREATED)
 async def create_book(book_request:BookRequest):
     new_book=Book(**book_request.dict())
     BOOKS.append(book_id(new_book))
@@ -96,7 +96,7 @@ def book_id(book:Book):
     return book
 
 
-@app.put("/books/update_book")
+@app.put("/books/update_book",status_code=status.HTTP_204_NO_CONTENT)
 async def update_book(book:BookRequest):
     change=False
     for i in range(len(BOOKS)):
@@ -107,7 +107,7 @@ async def update_book(book:BookRequest):
         raise HTTPException(status_code=404,detail="Item Not Found")
 
 
-@app.delete("/books/{book_id}")
+@app.delete("/books/{book_id}",status_code=status.HTTP_204_NO_CONTENT)
 async def delete_book(book_id:int =Path(gt=0)):
     change = False
     for i in range(len(BOOKS)):
