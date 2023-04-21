@@ -12,13 +12,15 @@ class Book:
     author: str
     desc: str
     rating: int
+    publish_date: int
 
-    def __init__(self, id, title, author, desc, rating):
+    def __init__(self, id, title, author, desc, rating,publish_date):
         self.id = id
         self.title = title
         self.author = author
         self.desc = desc
         self.rating = rating
+        self.publish_date=publish_date
 
 class BookRequest(BaseModel):
     id: Optional[int]=Field(title='id is not needed')
@@ -26,26 +28,28 @@ class BookRequest(BaseModel):
     author: str=Field(min_length=1)
     desc: str=Field(min_length=1,max_length=100)
     rating: int=Field(gt=-1,lt=6)
+    publish_date: int=Field(gt=1999,lt=2032)
 
     class Config:
         schema_extra={
             'example':{
-            'title':'A new book',
-            'author':'dini',
-            'desc':'A new desc',
-            'rating':5
+                'title':'A new book',
+                'author':'dini',
+                'desc':'A new desc',
+                'rating':5,
+                'publish_date':2029
         }
         }
 
 
 
 BOOKS = [
-     Book(1, 'computer science', 'dini', 'good book',4),
-     Book(2, 'fast api', 'dini','great book', 5),
-     Book(3, 'dsa', 'vivek', 'nice book', 4),
-     Book(4, 'api1', 'adi', 'awesomr book', 5),
-     Book(5, 'api2', 'akhil', 'good book', 4),
-     Book(6, 'ap3', 'adi', 'not bad book', 3)
+     Book(1, 'computer science', 'dini', 'good book',4,2030),
+     Book(2, 'fast api', 'dini','great book', 5,2030),
+     Book(3, 'dsa', 'vivek', 'nice book', 4,2029),
+     Book(4, 'api1', 'adi', 'awesomr book', 5,2028),
+     Book(5, 'api2', 'akhil', 'good book', 4,2027),
+     Book(6, 'ap3', 'adi', 'not bad book', 3,2026)
 ]
 
 
@@ -67,6 +71,16 @@ async def read_by_rating(book_rating: int):
         if book.rating==book_rating:
             books_to_return.append(book)
     return books_to_return
+
+
+@app.get("/books/publish/")
+async def read_by_publish_date(publish_date:int):
+    books_to_return=[]
+    for book in BOOKS:
+        if book.publish_date==publish_date:
+            books_to_return.append(book)
+    return books_to_return
+
 
 @app.post("/create_book")
 async def create_book(book_request:BookRequest):
