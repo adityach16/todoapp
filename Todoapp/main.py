@@ -5,7 +5,7 @@ from fastapi import FastAPI, Depends, HTTPException, Path
 from starlette import status
 import models
 from models import Todos
-from db import engine, SessionLocal
+from database import engine, SessionLocal
 from routers import auth
 
 app = FastAPI()
