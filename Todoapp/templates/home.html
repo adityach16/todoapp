@@ -22,11 +22,11 @@
                   {% for todo in todos %}
                     <tr class="pointer">
                         <td>{{loop.index}}</td>
-                        <td>{{todo.title}}</td>
+                        <td>title</td>
                         <td>
 
                             <button type="button" class="btn btn-success">Complete</button>
-                            <button onclick="window.location.href='edit-todo/{{todo_id}}'"
+                            <button onclick="window.location.href='edit-todo/{{todo.id}}'"
                                     type="button" class="btn btn-info">
                                 Edit
                             </button>
