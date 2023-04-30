@@ -21,15 +21,6 @@ ALGORITHM = "HS256"
 
 templates=Jinja2Templates(directory="templates")
 
-
-class CreateUser(BaseModel):
-    username: str
-    email: Optional[str]
-    first_name: str
-    last_name: str
-    password: str
-
-
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 models.Base.metadata.create_all(bind=engine)
@@ -105,28 +96,10 @@ async def get_current_user(request:Request):
         username: str = payload.get("sub")
         user_id: int = payload.get("id")
         if username is None or user_id is None:
-            return None
+            logout(request)
         return {"username": username, "id": user_id}
     except JWTError:
-        raise get_user_exception()
-
-
-@router.post("/create/user")
-async def create_new_user(create_user: CreateUser, db: Session = Depends(get_db)):
-    create_user_model = models.Users()
-    create_user_model.email = create_user.email
-    create_user_model.username = create_user.username
-    create_user_model.first_name = create_user.first_name
-    create_user_model.last_name = create_user.last_name
-
-    hash_password = get_password_hash(create_user.password)
-
-    create_user_model.hashed_password = hash_password
-    create_user_model.is_active = True
-
-    db.add(create_user_model)
-    db.commit()
-
+        raise HTTPException(status_code=404,detail="Not Found")
 
 @router.post("/token")
 async def login_for_access_token(response:Response, form_data: OAuth2PasswordRequestForm = Depends(),
@@ -162,7 +135,6 @@ async def login(request:Request,db:Session=Depends(get_db)):
     except HTTPException:
         msg="Unknown Error"
         return templates.TemplateResponse("login.html",{'request':request,"msg":msg})
-
 
 
 @router.get("/logout")
@@ -206,23 +178,3 @@ async def register_form(request:Request,email:str=Form(...),username:str=Form(..
 
     msg = "User Successfully created"
     return templates.TemplateResponse("login.html",{"request":request,"msg":msg})
-
-#Exceptions
-def get_user_exception():
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    return credentials_exception
-
-
-def token_exception():
-    token_exception_response = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Incorrect username or password",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    return token_exception_response
-
-
