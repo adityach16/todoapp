@@ -1,7 +1,7 @@
 import sys
 sys.path.append("..")
 from starlette.responses import RedirectResponse
-from fastapi import Depends, HTTPException, status, APIRouter,Request,Response
+from fastapi import Depends, HTTPException, status, APIRouter,Request,Response,Form
 from pydantic import BaseModel
 from typing import Optional
 import models
@@ -178,7 +178,36 @@ async def register(request:Request):
     return templates.TemplateResponse("register.html",{"request":request})
 
 
-# Exceptions
+@router.post("/register", response_class=HTMLResponse)
+async def register_form(request:Request,email:str=Form(...),username:str=Form(...),
+                        firstname:str=Form(...),lastname:str=Form(...),password:str=Form(...),
+                        password2:str=Form(...),db:Session=Depends(get_db)):
+
+    validation1=db.query(models.Users).filter(models.Users.username==username).first()
+
+    validation2=db.query(models.Users).filter(models.Users.email==email).first()
+
+    if password != password2 or validation1 is not None or validation2 is not None:
+        msg = "Invalid Registration"
+        return templates.TemplateResponse("register.html",{"request":request,"msg":msg})
+
+    user_model=models.Users()
+    user_model.username=username
+    user_model.email=email
+    user_model.first_name=firstname
+    user_model.last_name=lastname
+
+    hash_pass=get_password_hash(password)
+    user_model.hashed_password=hash_pass
+    user_model.is_active=True
+
+    db.add(user_model)
+    db.commit()
+
+    msg = "User Successfully created"
+    return templates.TemplateResponse("login.html",{"request":request,"msg":msg})
+
+#Exceptions
 def get_user_exception():
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
